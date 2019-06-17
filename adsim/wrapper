@@ -1,0 +1,24 @@
+#!/bin/bash 
+i=$1
+./01simulate_wrapper.sh \
+--1000G /home/angela/1000G/1000G.vcf \
+--out ~/ancestry_validation/cohort3/${i} \
+--nsim 20 \
+--chr 22 \
+-g 11 \
+-m ~/Local_ancestry/chr22.interpolated_genetic_map \
+--samples ~/Local_ancestry/pop_codes/${i}.txt
+
+./02aMake_pruned.sh \
+--vcf ~/ancestry_validation/cohort3/${i}.query.vcf \
+--bcf ~/ancestry_validation/cohort3/${i}.ref.bcf.gz \
+--r2 0.6 \
+-m ~/ancestry_validation/cohort3/${i}_genetic_map_intersection.txt \
+-o ~/ancestry_validation/cohort3/${i}_pruning
+
+./02bMake_thinned.sh \
+--vcf ~/ancestry_validation/cohort3/${i}.query.vcf \
+--bcf ~/ancestry_validation/cohort3/${i}.ref.bcf.gz \
+-t 50000 \
+-m ~/ancestry_validation/cohort3/${i}_genetic_map_intersection.txt \
+-o ~/ancestry_validation/cohort3/${i}_thinning
