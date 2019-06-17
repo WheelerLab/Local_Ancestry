@@ -4,6 +4,7 @@ My final project for Advanced Bioinformatics (BIOI 500) was a comparison of thre
 
 * [Generating ancestral proportions from 1000G populations](https://github.com/aandaleon/Local_Ancestry/blob/master/01_get_1000G_proportions.R)
 * [Simulating genotypes from 1000G CEU and YRI](https://github.com/aandaleon/Local_Ancestry/blob/master/02_sample_refs.R)
+* [Also see adsim scripts and notes] (https://github.com/WheelerLab/Local_Ancestry/tree/master/adsim)
  
 <center>
 
