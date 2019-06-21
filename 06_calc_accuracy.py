@@ -204,7 +204,7 @@ compare_RFMix_class_to_result = pop.merge(RFMix_id_classes, left_index = True, r
 ############
 
 #ELAI in dosage format, change ans to match dosage
-ELAI = pd.read_csv(ELAI_results, delim_whitespace = True, header = None).transpose().astype(int) #round all ELAI to pop codes
+ELAI = pd.read_csv(ELAI_results, delim_whitespace = True, header = None).transpose().round(0).astype(int) #round all ELAI to pop codes
 ELAI_pos = pd.read_csv(ELAI_pos, delim_whitespace = True, header = None)
 rsid_pop = []
 
