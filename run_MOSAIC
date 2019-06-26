@@ -9,7 +9,7 @@ do
 	        shift 2
 	        ;;
       --query) #path to European .vcf reference file (see RFMix output)
-         	vcf="$2"
+         	vcfFile="$2"
 	        shift 2
 	        ;;
       --pop) #population code - determines prefix of output
