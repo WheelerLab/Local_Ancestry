@@ -1,0 +1,20 @@
+#!/bin/bash
+#!/bin/bash
+#PBS -S /bin/bash
+#PBS -l nodes=1:ppn=1
+#PBS -o /home/ryan/logs/${PBS_JOBNAME}.o${PBS_JOBID}.log
+#PBS -e /home/ryan/logs/${PBS_JOBNAME}.e${PBS_JOBID}.err
+#PBS -l walltime=150:00:00
+#PBS -l mem=16gb
+for i in MXL
+do
+	for j in 1 2 3
+	do
+		Rscript ~/software/Local_Ancestry/accuracy_estimation/LAMPLD_accuracy.R \
+		--long ~/ancestry_validation/cohort${j}/thinned/simLAMPLD/${i}/${i}_thin_resultsadmixed_est.long \
+		--haps.hap.gz ~/ancestry_validation/cohort${j}/thinned/simLAMPLD/${i}/${i}_thin_resultsadmixed.haps.hap.gz \
+		--haps.sample ~/ancestry_validation/cohort${j}/thinned/simLAMPLD/${i}/${i}_thin_resultsadmixed.haps.sample \
+		--result ~/ancestry_validation/cohort${j}/original/${i}.result \
+		--out ~/ancestry_validation/cohort${j}/thinned/simLAMPLD/${i}/LAMP_${i}_${j}
+	done
+done

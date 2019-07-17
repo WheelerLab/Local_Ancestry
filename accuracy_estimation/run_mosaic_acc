@@ -1,0 +1,32 @@
+#!/bin/bash
+#PBS -N MOSAIC_acc
+#PBS -S /bin/bash
+#PBS -l nodes=1:ppn=1
+#PBS -o /home/ryan/logs/${PBS_JOBNAME}.o${PBS_JOBID}.log
+#PBS -e /home/ryan/logs/${PBS_JOBNAME}.e${PBS_JOBID}.err
+#PBS -l walltime=150:00:00
+#PBS -l mem=16gb
+#for i in BRYC EVEN ASW ACB MXL PUR
+for i in ASW ACB MXL PUR EVEN BRYC
+do
+	for j in 1 2 3 
+	do
+		if [ ${i} == "EVEN" ] || [ ${i} == "BRYC" ]
+		then
+			nanc=3
+		else
+			nanc=2
+		fi
+		rdata=$( ls ~/ancestry_validation/cohort${j}/thinned/simMOSAIC/${i}/MOSAIC_RESULTS/localanc_${i}_${nanc}way*RData )
+		echo $rdata
+		echo $nanc
+		Rscript ~/software/Local_Ancestry/accuracy_estimation/MOSAIC_accuracy.R \
+		--rdata ${rdata} \
+		--intermediate ~/ancestry_validation/cohort${j}/thinned/simMOSAIC/${i}/intermediate/ \
+		--haps.sample ~/ancestry_validation/cohort${j}/thinned/simMOSAIC/${i}/intermediate/${i}.haps.sample \
+		--nancestries ${nanc} \
+		--result ~/ancestry_validation/cohort${j}/original/${i}.result \
+		--bim ~/ancestry_validation/cohort${j}/thinned/simMOSAIC/${i}/intermediate/${i}_cm.bim \
+		--out ~/ancestry_validation/cohort${j}/thinned/simMOSAIC/${i}/${i}${j}_
+	done
+done
