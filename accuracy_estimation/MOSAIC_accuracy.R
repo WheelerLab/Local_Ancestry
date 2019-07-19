@@ -46,13 +46,14 @@ if (args$nancestries == 3){
     cat( i, "/20\n")
     hap2<-i*2
     hap1<-hap2-1
-    #MOSAIC ancestries are stored in n_ancestries x n_haplotypes x n_snps matrix
+    #MOSAIC ancestries are stored in 3d matrix with dimensions n_ancestries x n_haplotypes x n_snps
     #select dosage of anc1 for all snps in hap1 of indiv i. Round these dosages either to 0 or 1. Do same for anc2 and anc3 but assign them distinct values
     anc1<-round(local_pos[[1]][1,hap1,])
     anc2<-round(local_pos[[1]][2,hap1,]); anc2[anc2==1]<-2
     anc3<-round(local_pos[[1]][3,hap1,]); anc3[anc3==1]<-3
     #create a single numeric vector of ancestry for hap 1
     hap1_ancestries<-ifelse(anc1==1,anc1,ifelse(anc2==2,anc2,anc3))
+    #account for rounding error (if all proportions are .3 will result in no ancestry)
     hap1_ancestries[hap1_ancestries==0]<-sample(random,1)
     #select dosage of anc1 for all snps in hap2 of indiv i. Round these dosages either to 0 or 1. Do same for anc2 and anc3 but assign them distinct values
     anc1<-round(local_pos[[1]][1,hap2,])
@@ -60,6 +61,7 @@ if (args$nancestries == 3){
     anc3<-round(local_pos[[1]][3,hap2,]); anc3[anc3==1]<-3
     #create a single numeric vector of ancestry for hap 2
     hap2_ancestries<-ifelse(anc1==1,anc1,ifelse(anc2==2,anc2,anc3))
+    #account for rounding error
     hap2_ancestries[hap2_ancestries==0]<-sample(random,1)
     #paste together the two haplotypes into one vector of two character strings
     diploid_anc<-paste(hap1_ancestries,hap2_ancestries, sep = "")
@@ -72,25 +74,32 @@ if (args$nancestries == 3){
     diploid_anc[diploid_anc == "22"] <- 4
     diploid_anc[diploid_anc == "23"] <- 5
     diploid_anc[diploid_anc == "33"] <- 6
+    #assign
     local_df[,i]<-as.numeric(diploid_anc)
     
     #repeat process for results df
+    #paste haplotype together
     dip_t<-paste(res[,hap1+2],res[,hap2+2],sep="")
+    #flip ancestries to keep fair with LAMPLD
     dip_t<-gsub("32","23",gsub("31","13",gsub("21","12",dip_t)))
+    #encode each ancestry
     dip_t[dip_t == "11"] <- 1
     dip_t[dip_t == "12"] <- 2
     dip_t[dip_t == "13"] <- 3
     dip_t[dip_t == "22"] <- 4
     dip_t[dip_t == "23"] <- 5
     dip_t[dip_t == "33"] <- 6
+    #assign
     dip_t<-as.numeric(dip_t)
     diploid_true[,i]<-dip_t
+    #take hap correlation
     hap_cor[hap1]<-cor.test(hap1_ancestries,res[,hap1+2],method="pearson")[[4]]
     hap_cor[hap2]<-cor.test(hap2_ancestries,res[,hap2+2],method="pearson")[[4]]
   }
 } else if (args$nancestries ==2){
   random<-c(1,2)
   for ( i in c(1:20)){ 
+    #same as above but for two ancestries
     cat( i, "/ 20\n")
     hap2<-i*2
     hap1<-hap2-1
@@ -120,14 +129,14 @@ if (args$nancestries == 3){
     hap_cor[hap2]<-cor.test(hap2_ancestries,res[,hap2+2],method="pearson")[[4]]
   }
 }
+#cor.test fails when there is 0sd in input, note these as impossible value to differentiate
 hap_cor[is.na(hap_cor)]<-1.01
 fwrite(as.list(hap_cor),args$out %&% "_hap_accuracy.txt", sep ="\t", col.names = F)
 ## assign snp ids to MOSAIC
 local_df<-as.data.frame(cbind.data.frame(bim,local_df))
 #colnames(local_df)<-c("chm","pos",ids)
 diploid_true<-as.data.frame(cbind.data.frame(bim,diploid_true))
-##read in known ancestry, make sure it has only the right snp, and cols in the right order
-#fwrite(local_df)
+
 
 #sanity check
 print("MOS dim:")
@@ -136,19 +145,16 @@ str(local_df)
 print("actual dim")
 dim(diploid_true)
 str(diploid_true)
-# fwrite(diploid_true,"~/software/Local_Ancestry/MOS_test_True.txt", sep = "\t")
-# fwrite(local_df,"~/software/Local_Ancestry/MOS_test_estimated.txt", sep = "\t")
+
 #begin corr tests per haplotype
 corrs<-c(rep(0,20))
 for (i in c(1:20)){
   corrs[i]<-cor.test(local_df[,(i+2)],diploid_true[,(i+2)],method="pearson")[[4]]
-  # print(sd(local_df[,(i+2)]))
-  # print(sd(diploid_true[,(i+2)]))
 }
 warnings()
 corrs[is.na(corrs)]<-1.01
 str(corrs)
-#fwrite(local_df,"~/software/Local_Ancestry/Local_DF.txt",col.names = T,sep='\t' )
+
 #process and write to file
 corr_R2<-corrs*corrs
 
