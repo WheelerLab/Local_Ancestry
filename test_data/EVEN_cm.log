@@ -1,0 +1,37 @@
+PLINK v1.90b4.4 64-bit (21 May 2017)
+Options in effect:
+  --cm-map /home/ryan/Data/genetic_maps/genetic_map_chr22_combined_b37.txt 22
+  --make-just-bim
+  --out /home/ryan/ancestry_validation/cohort1/thinned/simMOSAIC/EVEN/intermediate/EVEN_cm
+  --vcf /home/ryan/ancestry_validation/cohort1/thinned/EVEN_thinning_thinned.recode.vcf
+
+Hostname: wheelerlab3
+Working directory: /home/ryan
+Start time: Tue Jul  2 23:14:33 2019
+
+Random number seed: 1562127273
+515881 MB RAM detected; reserving 257940 MB for main workspace.
+Allocated 14523 MB successfully, after larger attempt(s) failed.
+--vcf:
+/home/ryan/ancestry_validation/cohort1/thinned/simMOSAIC/EVEN/intermediate/EVEN_cm-temporary.bed
++
+/home/ryan/ancestry_validation/cohort1/thinned/simMOSAIC/EVEN/intermediate/EVEN_cm-temporary.bim
++
+/home/ryan/ancestry_validation/cohort1/thinned/simMOSAIC/EVEN/intermediate/EVEN_cm-temporary.fam
+written.
+50000 variants loaded from .bim file.
+20 people (0 males, 0 females, 20 ambiguous) loaded from .fam.
+Ambiguous sex IDs written to
+/home/ryan/ancestry_validation/cohort1/thinned/simMOSAIC/EVEN/intermediate/EVEN_cm.nosex
+.
+--cm-map: 1 chromosome updated.
+Using 1 thread (no multithreaded calculations invoked).
+Before main variant filters, 20 founders and 0 nonfounders present.
+Calculating allele frequencies... done.
+50000 variants and 20 people pass filters and QC.
+Note: No phenotypes present.
+--make-just-bim to
+/home/ryan/ancestry_validation/cohort1/thinned/simMOSAIC/EVEN/intermediate/EVEN_cm.bim
+... done.
+
+End time: Tue Jul  2 23:14:33 2019
