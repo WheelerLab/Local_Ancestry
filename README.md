@@ -23,7 +23,9 @@ My final project for Advanced Bioinformatics (BIOI 500) was a comparison of thre
   * [VCF to LAMP-LD](https://github.com/aandaleon/Local_Ancestry/blob/master/03_LAMP_LD.sh)
   * [VCF to RFMix](https://github.com/aandaleon/Local_Ancestry/blob/master/04_RFMix.py)
   * [VCF to ELAI](https://github.com/aandaleon/Local_Ancestry/blob/master/05_ELAI.sh)
-* Measure [accuracy](https://github.com/aandaleon/Local_Ancestry/blob/master/06_calc_accuracy.py) and resource use of softwares
+  * [VCF to MOSAIC](https://github.com/WheelerLab/Local_Ancestry/blob/master/06_MOSAIC.sh)
+  * [VCF to Loter](https://github.com/WheelerLab/Local_Ancestry/blob/master/07_Loter.sh)
+* Measure [accuracy](https://github.com/WheelerLab/Local_Ancestry/tree/master/accuracy_estimation) and resource use of softwares
 
 ## Links
 * BIOI 500 summaries
@@ -38,4 +40,10 @@ My final project for Advanced Bioinformatics (BIOI 500) was a comparison of thre
 * ELAI
   * [Paper](http://www.genetics.org/content/196/3/625.long)
   * [Software](http://www.haplotype.org/elai.html)
+* MOSAIC
+  * [Paper](https://www.genetics.org/content/212/3/869)
+  * [Software](https://maths.ucd.ie/~mst/MOSAIC/)
+* Loter
+  * [Paper](https://academic.oup.com/mbe/article/35/9/2318/5040668)
+  * [Software](https://github.com/bcm-uga/Loter)
 
