@@ -7,8 +7,9 @@ library(dplyr)
 
 parser <- ArgumentParser()
 parser$add_argument("--viterbi", help="Rdata object ouput by MOSAIC")
-parser$add_argument("--haps.hap.gz", help="admixed sample list")
-parser$add_argument("--haps.sample", help="admixed samle list")
+parser$add_argument("--haps.hap.gz", help="haplotype genome file")
+parser$add_argument("--ref.map", help="admixed sample list")
+parser$add_argument("--classes", help="classes file made for rfmix input")
 parser$add_argument("--nanc", help="number of ancestries estimated")
 parser$add_argument("--result", help="results file output by adsim")
 parser$add_argument("--out", help="file you would like to output as")
@@ -22,85 +23,95 @@ rfout<-as.data.frame(cbind.data.frame(snps,rfout))
 true_ancestry<-fread(args$result, header = T)
 true_ancestry_subset<-inner_join(true_ancestry,snps,by=c("chm","pos"))
 
-# str(true_ancestry_subset)
-# str(rfout)
-##calculate haploid correlation
-hap_cor<-c(rep(NA,40))
+#separating true ancesty into ancestral groups
+snp_count_true<-nrow(true_ancestry_subset)
+nanc<-as.numeric(args$nanc)
+n_haps<-(ncol(true_ancestry_subset) - 2)
+nindv<-n_haps/2
+true_ancestry_decomposed_haploid<-matrix(NA,nrow=snp_count_true,ncol=nanc*n_haps)
+rf_ancestry_decomposed_haploid<-matrix(NA,nrow=snp_count_true,ncol=nanc*n_haps)
+
+decompose_hap_to_ancestries<-function(haplotype, nanc){
+  decomposed_anc<-matrix(,nrow = nrow(haplotype),ncol = nanc)
+  anc1<-ifelse(haplotype==1,1,0)
+  anc2<-ifelse(haplotype==2,1,0)
+  decomposed_anc[,1]<-anc1
+  decomposed_anc[,2]<-anc2
+  if (nanc == 3){
+    anc3<-ifelse(haplotype==3,1,0)
+    decomposed_anc[,3]<-anc3
+    return(decomposed_anc)
+  } else {
+    return(decomposed_anc)
+  }
+}
+print("separating haplotypes into composite ancestries")
 for (i in c(1:40)){
-  x<-select(true_ancestry_subset, (i+2)) %>% unlist %>% as.numeric()
-  y<-select(rfout,(i+2)) %>% unlist %>% as.numeric()
-  cor<-cor.test(x,y,method="pearson")
-  hap_cor[i]<-cor$estimate
-}
-hap_cor[is.na(hap_cor)]<-1.01
-hap_cor<-as.list(hap_cor)
-fwrite(hap_cor,args$out %&% "_haps_accuracy.txt", sep="\t", col.names = F)
-#instantiate empty df
-#convert haplod ancestry to diploid
-diploid_true<-data.frame(matrix(ncol=20,nrow=dim(true_ancestry_subset)[1]))
-diploid_est<-data.frame(matrix(ncol=20,nrow=dim(rfout)[1]))
-
-if (args$nanc == 3){
-  random<-c(1,2,3)
-  for ( i in c(1:20)){ 
-    cat( i, "/20\n")
-    hap2<-i*2
-    hap1<-hap2-1
-    dip_est<-paste(rfout[,(hap1+2)],rfout[,(hap2+2)],sep="")
-    dip_est<-gsub("32","23",gsub("31","13",gsub("21","12",dip_est)))
-    dip_est[dip_est == "11"] <- 1
-    dip_est[dip_est == "12"] <- 2
-    dip_est[dip_est == "13"] <- 3
-    dip_est[dip_est == "22"] <- 4
-    dip_est[dip_est == "23"] <- 5
-    dip_est[dip_est == "33"] <- 6
-    dip_est<-as.numeric(dip_est)
-    diploid_est[,i]<-dip_est
-    
-    #repeat process for results df
-    dip_t<-paste(true_ancestry_subset[,hap1+2],true_ancestry_subset[,hap2+2],sep="")
-    dip_t<-gsub("32","23",gsub("31","13",gsub("21","12",dip_t)))
-    dip_t[dip_t == "11"] <- 1
-    dip_t[dip_t == "12"] <- 2
-    dip_t[dip_t == "13"] <- 3
-    dip_t[dip_t == "22"] <- 4
-    dip_t[dip_t == "23"] <- 5
-    dip_t[dip_t == "33"] <- 6
-    dip_t<-as.numeric(dip_t)
-    diploid_true[,i]<-dip_t
+  j<-i+2
+  k<-i*nanc
+  if(nanc==3){
+    storage_indices<-c(k-2,k-1,k)
+  } else {
+    storage_indices<-c(k-1,k)
   }
-} else if (args$nanc ==2){
-  random<-c(1,2)
-  for ( i in c(1:20)){ 
-    cat( i, "/20\n")
-    hap2<-i*2 
-    hap1<-hap2-1
-    dip_est<-paste(rfout[,(hap1+2)],rfout[,(hap2+2)],sep="")
-    dip_est<-gsub("21","12",dip_est)
-    dip_est[dip_est == "11"] <- 1
-    dip_est[dip_est == "12"] <- 2
-    dip_est[dip_est == "22"] <- 3
-    dip_est<-as.numeric(dip_est)
-    diploid_est[,i]<-dip_est
-    
-    #repeat process for results df
-    dip_t<-paste(true_ancestry_subset[,hap1+2],true_ancestry_subset[,hap2+2],sep="")
-    dip_t<-gsub("21","12",dip_t)
-    dip_t[dip_t == "11"] <- 1
-    dip_t[dip_t == "12"] <- 2
-    dip_t[dip_t == "22"] <- 3
-    dip_t<-as.numeric(dip_t)
-    diploid_true[,i]<-dip_t
-  }
+  true_ancestry_decomposed_haploid[,storage_indices]<-decompose_hap_to_ancestries(select(true_ancestry_subset, c(j)),nanc)
+  rf_ancestry_decomposed_haploid[,storage_indices]<-decompose_hap_to_ancestries(select(rfout, c(j)),nanc)
 }
 
-dip_cor<-c(rep(NA,20))
+true_ancestry_decomposed_diploid<-matrix(NA,nrow=snp_count_true,ncol=nanc*nindv)
+rf_ancestry_decomposed_diploid<-matrix(NA,nrow=snp_count_true,ncol=nanc*nindv)
+
+print("converting haploid to diploid")
 for (i in c(1:20)){
-  x<-diploid_true[,i]
-  y<-diploid_est[,i]
-  dcor<-cor.test(x,y,method="pearson")
-  dip_cor[i]<-dcor$estimate
+  k<-i*nanc*2
+  j<-i*nanc
+  
+  if(nanc==3){
+    hap1_indices<-c(k-5,k-4,k-3)
+    hap2_indices<-c(k-2,k-1,k)
+    storage_indices<-c(j-2,j-1,j)
+  } else {
+    hap1_indices<-c(k-3,k-2)
+    hap2_indices<-c(k-1,k)
+    storage_indices<-c(j-1,j)
+  }
+  
+  hap1<-true_ancestry_decomposed_haploid[,hap1_indices]
+  hap2<-true_ancestry_decomposed_haploid[,hap2_indices]
+  dip<-(hap1 + hap2)
+  true_ancestry_decomposed_diploid[,storage_indices]<-dip
+  
+  rfhap1<-rf_ancestry_decomposed_haploid[,hap1_indices]
+  rfhap2<-rf_ancestry_decomposed_haploid[,hap2_indices]
+  rfdip<-(rfhap1 + rfhap2)
+  rf_ancestry_decomposed_diploid[,storage_indices]<-rfdip
 }
-dip_cor[is.na(dip_cor)]<-1.01
-dip_cor<-as.list(dip_cor)
-fwrite(dip_cor,args$out %&% "_dip_accuracy.txt",col.names = F, sep ='\t')
+
+hap_corr<-c(rep(NA,n_haps))
+dip_corr<-c(rep(NA,nindv))
+
+print("correlating diploid")
+for (i in c(1:nindv)){
+  j<-i*nanc
+  threshold<-(1/nanc)
+  if(nanc==3){
+    storage_indices<-c(j-2,j-1,j)
+    flip<-c(2,1,3)
+  } else {
+    storage_indices<-c(j-1,j)
+    flip<-c(2,1)
+  }
+  rf_indiv_i<-rf_ancestry_decomposed_diploid[,storage_indices]
+
+  true_indiv_i<-true_ancestry_decomposed_diploid[,storage_indices]
+  corr<-cor.test(rf_indiv_i,true_indiv_i)
+  if (((nanc == 3)) | ((nanc == 2) & (corr$estimate < 0))){
+    rf_indiv_i<-rf_indiv_i[,flip]
+    #str(rf_indiv_i)
+    corr<-cor.test(rf_indiv_i,true_indiv_i)
+  }
+  dip_corr[i]<-corr$estimate
+}
+
+#dip_corr
+fwrite(as.list(dip_corr),args$out,sep ="\t")
